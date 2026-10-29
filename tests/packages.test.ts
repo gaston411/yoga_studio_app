@@ -40,7 +40,7 @@ describe('Spec 001 — Saldo de paquete verificable', () => {
   beforeEach(() => {
     db = new Database();
     service = new PackageService(db);
-    studentId = db.createStudent({ name: 'Lucía Méndez', phone: '+5491144556677' }).id;
+    studentId = db.createStudent({ name: 'Lucía Méndez', phone: '+5491100000015' }).id;
     tuesdayClassId = db.createSession({
       instructor_name: 'Instructora 1',
       start_time: '2026-11-03T19:00:00-03:00',
