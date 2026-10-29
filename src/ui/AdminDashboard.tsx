@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Database, Student, ClassSession, InstructorName } from '../infrastructure/db.ts';
 import { PackageService } from '../domain/packages.ts';
+import { REASON_LABEL, BY_LABEL } from './StudentCard.tsx';
 import { SessionService, EmergencyCancellationReport } from '../domain/sessions.ts';
 import {
   Users,
@@ -90,17 +91,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       });
       setFeedback({
         type: 'success',
-        message: `Clase vespertina programada con ${sessionInstructor} (Aforo máx: 12 personas).`,
+        message: `Clase creada con ${sessionInstructor}. Tiene 12 lugares.`,
       });
       onRefresh();
     } catch (err: unknown) {
-      setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'Error al crear sesión' });
+      setFeedback({ type: 'error', message: err instanceof Error ? err.message : 'No se pudo crear la clase.' });
     }
   };
 
   const handleTriggerEmergencyCancellation = () => {
     if (!selectedEmergencySession) {
-      setFeedback({ type: 'error', message: 'Selecciona una clase para cancelar por contingencia.' });
+      setFeedback({ type: 'error', message: 'Elige la clase que quieres cancelar.' });
       return;
     }
     try {
@@ -131,7 +132,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </span>
             <h2 className="text-2xl font-bold mt-1 text-white">Estudio Andrea Yoga</h2>
             <p className="text-emerald-200 text-sm mt-0.5">
-              Gestión operativa, aforos vespertinos (12 max), auditoría de paquetes y contingencias.
+              Da de alta paquetes, organiza las clases y avisa cambios por WhatsApp.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-emerald-800/80 px-4 py-2 rounded-xl text-xs font-medium border border-emerald-700">
@@ -151,7 +152,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }`}
           >
             <CreditCard className="w-4 h-4" />
-            Paquetes y Auditoría
+            Paquetes
           </button>
           <button
             onClick={() => setActiveTab('sessions')}
@@ -162,7 +163,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }`}
           >
             <Calendar className="w-4 h-4" />
-            Clases y Aforo (12 máx)
+            Clases
           </button>
           <button
             onClick={() => setActiveTab('emergency')}
@@ -173,7 +174,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }`}
           >
             <AlertTriangle className="w-4 h-4" />
-            Contingencia y WhatsApp
+            Avisos
           </button>
         </div>
       </div>
@@ -200,14 +201,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* TAB 1: PAQUETES Y AUDITORÍA */}
       {activeTab === 'packages' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Formulario de Alta Manual de Paquete */}
+          {/* Formulario de Nuevo paquete */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 lg:col-span-1">
             <h3 className="text-lg font-bold text-stone-900 flex items-center gap-2">
               <PlusCircle className="w-5 h-5 text-emerald-700" />
-              Alta Manual de Paquete
+              Nuevo paquete
             </h3>
             <p className="text-xs text-stone-500 mt-1 mb-4">
-              Cobro en recepción/transferencia. Se acreditan 10 clases con registro inmutable.
+              Cobra en el estudio o por transferencia y registra aquí el paquete de 10 clases.
             </p>
 
             <form onSubmit={handleCreateStudentAndPackage} className="space-y-4">
@@ -230,13 +231,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="+54 9 11 1234-5678"
+                  placeholder="+54 9 11 0000-0000"
                   value={studentPhone}
                   onChange={(e) => setStudentPhone(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 />
                 <span className="text-[10px] text-stone-400">
-                  Formato internacional para enlaces directos de WhatsApp API.
+                  Con código de país, para poder escribirle por WhatsApp.
                 </span>
               </div>
 
@@ -258,7 +259,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 className="w-full py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-medium text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Registrar Alta de Paquete
+                Dar de alta paquete
               </button>
             </form>
           </div>
@@ -270,7 +271,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               Alumnas y Saldos de Clases
             </h3>
             <p className="text-xs text-stone-500 mb-4">
-              Control de saldos activos y pista de auditoría para resolver disputas de clases.
+              Mira cuántas clases le quedan a cada alumna y su historial.
             </p>
 
             <div className="overflow-x-auto">
@@ -281,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <th className="py-2.5 px-3">Teléfono</th>
                     <th className="py-2.5 px-3">Saldo</th>
                     <th className="py-2.5 px-3">Estado</th>
-                    <th className="py-2.5 px-3 text-right">Auditoría</th>
+                    <th className="py-2.5 px-3 text-right">Historial</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
@@ -353,10 +354,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="flex justify-between items-center mb-4 pb-2 border-b border-stone-200">
                     <div>
                       <h4 className="font-bold text-stone-900">
-                        Pista de Auditoría: {selectedStudentForAudit.name}
+                        Historial de {selectedStudentForAudit.name}
                       </h4>
                       <p className="text-xs text-stone-500">
-                        Historial inmutable de movimientos para resolución de disputas
+                        Todos los movimientos del paquete. No se pueden borrar.
                       </p>
                     </div>
                     <button
@@ -398,10 +399,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                       >
                                         {log.delta > 0 ? `+${log.delta}` : log.delta}
                                       </span>
-                                      <span>— {log.reason}</span>
+                                      <span>— {REASON_LABEL[log.reason] ?? log.reason}</span>
                                     </div>
                                     <div className="text-[10px] text-stone-400 mt-0.5">
-                                      {new Date(log.timestamp).toLocaleString()} • Por: {log.performed_by}
+                                      {new Date(log.timestamp).toLocaleString('es-AR', { hour12: false })} • Registró: {BY_LABEL[log.performed_by] ?? log.performed_by}
                                     </div>
                                   </div>
                                 </div>
@@ -434,10 +435,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 lg:col-span-1">
             <h3 className="text-lg font-bold text-stone-900 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-emerald-700" />
-              Programar Sesión Vespertina
+              Nueva clase
             </h3>
             <p className="text-xs text-stone-500 mt-1 mb-4">
-              Tope estricto de 12 personas por sesión. Las reservas excedentes van a lista de espera FIFO.
+              Cada clase tiene 12 lugares. Quien reserve después entra a la lista de espera.
             </p>
 
             <form onSubmit={handleCreateSession} className="space-y-4">
@@ -481,7 +482,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="bg-stone-50 p-3 rounded-lg border border-stone-200 text-xs text-stone-600">
                 <span className="font-semibold block text-stone-800">Cupo Máximo Configurado:</span>
-                12 lugares confirmados. Alumna 13 en adelante ingresa automáticamente a la lista de espera FIFO.
+                12 lugares. Desde la alumna 13, las reservas pasan a la lista de espera.
               </div>
 
               <button
@@ -489,7 +490,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 className="w-full py-2.5 px-4 bg-emerald-800 hover:bg-emerald-900 text-white font-medium text-sm rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
               >
                 <PlusCircle className="w-4 h-4" />
-                Crear Sesión Vespertina
+                Crear clase
               </button>
             </form>
           </div>
@@ -500,7 +501,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               Sesiones Programadas y Ocupación
             </h3>
             <p className="text-xs text-stone-500 mb-4">
-              Estado de aforos en tiempo real con indicador de cupos y lista de espera.
+              Lugares ocupados y lista de espera de cada clase.
             </p>
 
             <div className="space-y-4">
@@ -566,7 +567,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {waitlisted.length > 0 && (
                             <div className="bg-amber-100 text-amber-900 px-2.5 py-1 rounded-lg text-right font-medium">
                               <span className="font-bold text-xs">{waitlisted.length}</span>
-                              <span className="block text-[10px]">en Espera (FIFO)</span>
+                              <span className="block text-[10px]">en espera</span>
                             </div>
                           )}
                         </div>
@@ -611,12 +612,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
               <div className="space-y-1">
                 <h3 className="text-lg font-bold text-red-950">
-                  Disparador Administrativo de Contingencia
+                  Cancelar una clase
                 </h3>
                 <p className="text-xs text-red-800 leading-relaxed max-w-2xl">
                   En caso de enfermedad de instructora o fuerza mayor, este disparador cancela la clase,
                   reembolsa automáticamente (+1) la clase a todas las alumnas confirmadas con registro en
-                  auditoría, y despacha alertas individualizadas con enlace directo a la API de WhatsApp.
+                  historial, y te prepara un mensaje de WhatsApp para cada alumna.
                 </p>
               </div>
             </div>
@@ -631,7 +632,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   onChange={(e) => setSelectedEmergencySession(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 bg-white"
                 >
-                  <option value="">-- Elige una sesión programada --</option>
+                  <option value="">Elige una clase</option>
                   {sessions
                     .filter((s) => s.status !== 'CANCELLED')
                     .map((s) => {
@@ -685,7 +686,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               {emergencyReport.affectedStudents.length === 0 ? (
                 <div className="p-4 bg-stone-50 rounded-xl text-stone-500 text-xs">
-                  La clase no tenía alumnas confirmadas. La sesión fue cancelada sin necesidad de reembolsos.
+                  La clase no tenía alumnas anotadas. Quedó cancelada.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -703,7 +704,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             {item.student.phone}
                           </span>
                           <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                            Reembolsada (+1 crédito)
+                            Clase devuelta (+1)
                           </span>
                         </div>
                         <p className="text-xs text-stone-600 italic line-clamp-1 max-w-xl">

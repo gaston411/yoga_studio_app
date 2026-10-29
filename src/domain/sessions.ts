@@ -110,19 +110,19 @@ export class SessionService {
       throw new Error(`Sesión ${sessionId} no encontrada`);
     }
     if (session.status === 'CANCELLED') {
-      throw new Error('No es posible reservar en una clase cancelada.');
+      throw new Error('Esta clase está cancelada. Elige otro horario.');
     }
 
     // Verificar que la alumna tenga paquete activo con clases
     const activePkg = this.packageService.getActivePackage(studentId);
     if (!activePkg || activePkg.remaining_classes <= 0) {
-      throw new Error('Saldo insuficiente: debes contar con un paquete activo con clases disponibles para solicitar un lugar.');
+      throw new Error('No te quedan clases. Habla con Andrea para renovar tu paquete.');
     }
 
     // Verificar si ya tiene una reserva no cancelada
     const existing = this.db.getBookingBySessionAndStudent(sessionId, studentId);
     if (existing && existing.booking_status !== 'CANCELLED') {
-      throw new Error('Ya cuentas con un lugar o estás en lista de espera para esta clase.');
+      throw new Error('Ya tienes lugar o estás en la lista de espera de esta clase.');
     }
 
     const confirmed = this.getConfirmedBookings(sessionId);
