@@ -22,13 +22,14 @@ export interface ClassPackage {
 }
 
 export type AuditReason =
+  | 'PACKAGE_CREATED'
   | 'CLASS_ATTENDED'
   | 'MANUAL_ADJUSTMENT'
   | 'LATE_CANCEL_CHARGE'
   | 'EMERGENCY_CANCEL_REFUND'
   | 'WAITLIST_PROMOTED';
 
-export type AuditPerformedBy = 'ADMIN' | 'SYSTEM';
+export type AuditPerformedBy = 'ADMIN' | 'INSTRUCTOR' | 'SYSTEM';
 
 export interface PackageAuditLog {
   id: string;
@@ -37,6 +38,8 @@ export interface PackageAuditLog {
   reason: AuditReason;
   performed_by: AuditPerformedBy;
   timestamp: string;
+  note?: string;
+  session_id?: string;
 }
 
 export type InstructorName = 'Instructora 1' | 'Instructora 2' | 'Andrea';
@@ -61,7 +64,7 @@ export interface Booking {
   created_at: string;
 }
 
-const STORAGE_KEY = 'andrea_yoga_engine_v1';
+const STORAGE_KEY = 'andrea_yoga_engine_v2';
 
 export class Database {
   private students: Map<string, Student> = new Map();
@@ -214,6 +217,8 @@ export class Database {
     delta: number;
     reason: AuditReason;
     performed_by: AuditPerformedBy;
+    note?: string;
+    session_id?: string;
   }): PackageAuditLog {
     const log: PackageAuditLog = {
       id: this.generateId(),
@@ -222,6 +227,8 @@ export class Database {
       reason: entry.reason,
       performed_by: entry.performed_by,
       timestamp: new Date().toISOString(),
+      ...(entry.note ? { note: entry.note } : {}),
+      ...(entry.session_id ? { session_id: entry.session_id } : {}),
     };
     this.auditLogs.push(log);
     this.saveToStorage();
@@ -386,7 +393,7 @@ export function seedInitialDemoData(db: Database) {
     db.addAuditLog({
       package_id: pkg.id,
       delta: 10,
-      reason: 'MANUAL_ADJUSTMENT',
+      reason: 'PACKAGE_CREATED',
       performed_by: 'ADMIN',
     });
   });
@@ -408,6 +415,7 @@ export function seedInitialDemoData(db: Database) {
       delta: -1,
       reason: 'CLASS_ATTENDED',
       performed_by: 'SYSTEM',
+      session_id: s1.id,
     });
     db.createBooking({
       session_id: s1.id,
