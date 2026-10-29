@@ -130,7 +130,7 @@ export class SessionService {
 
     if (confirmed.length < maxCapacity) {
       // Cupo disponible: confirmar y debitar clase
-      this.packageService.debitClass(activePkg.id, 'CLASS_ATTENDED', 'SYSTEM');
+      this.packageService.debitClass(activePkg.id, 'CLASS_ATTENDED', 'SYSTEM', sessionId);
 
       return this.db.createBooking({
         session_id: sessionId,
@@ -186,7 +186,7 @@ export class SessionService {
         .reverse()
         .find((p) => p.status === 'ACTIVE' || p.status === 'EXHAUSTED');
       if (activePkg) {
-        this.packageService.refundClass(activePkg.id, 'EMERGENCY_CANCEL_REFUND', 'SYSTEM');
+        this.packageService.refundClass(activePkg.id, 'EMERGENCY_CANCEL_REFUND', 'SYSTEM', sessionId);
       }
 
       // Buscar candidata FIFO en lista de espera (la de menor posición)
@@ -199,7 +199,7 @@ export class SessionService {
           // Buscar paquete de la alumna promovida para debitar
           const nextPkg = this.packageService.getActivePackage(nextStudent.id);
           if (nextPkg && nextPkg.remaining_classes > 0) {
-            this.packageService.debitClass(nextPkg.id, 'CLASS_ATTENDED', 'SYSTEM');
+            this.packageService.debitClass(nextPkg.id, 'CLASS_ATTENDED', 'SYSTEM', sessionId);
 
             promotedBooking = this.db.updateBooking(nextInLine.id, {
               booking_status: 'CONFIRMED',
@@ -265,6 +265,10 @@ export class SessionService {
     if (!booking || booking.booking_status !== 'CONFIRMED') {
       throw new Error('La alumna debe tener una reserva confirmada para registrar su asistencia.');
     }
+    // Spec 001: si la reserva no cobró la clase, se cobra ahora con rastro de la instructora.
+    if (this.packageService.chargedForSession(studentId, sessionId) >= 0) {
+      this.packageService.registerAttendance(studentId, sessionId, 'INSTRUCTOR');
+    }
     return this.db.updateBooking(booking.id, { booking_status: 'ATTENDED' });
   }
 
@@ -308,7 +312,7 @@ export class SessionService {
       const pkgToRefund = studentPackages.find((p) => p.status === 'ACTIVE' || p.status === 'EXHAUSTED');
 
       if (pkgToRefund) {
-        this.packageService.refundClass(pkgToRefund.id, 'EMERGENCY_CANCEL_REFUND', performedBy);
+        this.packageService.refundClass(pkgToRefund.id, 'EMERGENCY_CANCEL_REFUND', performedBy, sessionId);
       }
 
       // Marcar reserva como CANCELLED
