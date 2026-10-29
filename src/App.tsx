@@ -4,171 +4,127 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { Leaf, RotateCcw } from 'lucide-react';
 import { globalDb, seedInitialDemoData } from './infrastructure/db.ts';
 import { PackageService } from './domain/packages.ts';
 import { SessionService } from './domain/sessions.ts';
 import { AdminDashboard } from './ui/AdminDashboard.tsx';
-import { AttendanceList } from './ui/AttendanceList.tsx';
-import { StudentBooking } from './ui/StudentBooking.tsx';
 import { StudentCard } from './ui/StudentCard.tsx';
-import {
-  Sparkles,
-  Shield,
-  Users,
-  Smartphone,
-  RefreshCw,
-  Info,
-} from 'lucide-react';
+import { Today, CalmErrorBoundary } from './ui/Today.tsx';
+
+type Role = 'admin' | 'instructor' | 'student';
+type AdminTab = 'today' | 'manage';
+
+const ROLES: { id: Role; label: string }[] = [
+  { id: 'admin', label: 'Andrea' },
+  { id: 'instructor', label: 'Instructoras' },
+  { id: 'student', label: 'Alumna' },
+];
+
+const SERIF = { fontFamily: 'Fraunces, Georgia, "Times New Roman", serif' };
 
 export default function App() {
-  const [role, setRole] = useState<'admin' | 'instructor' | 'student'>('admin');
+  const [role, setRole] = useState<Role>('admin');
+  const [adminTab, setAdminTab] = useState<AdminTab>('today');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [resetKey, setResetKey] = useState(0);
 
-  // Instanciar servicios
   const packageService = new PackageService(globalDb);
   const sessionService = new SessionService(globalDb, packageService);
 
   useEffect(() => {
-    // Si la base está vacía en primer inicio, cargar datos demo con escenarios preparados
     seedInitialDemoData(globalDb);
-    setRefreshKey((k) => k + 1);
+    setResetKey((k) => k + 1);
   }, []);
 
-  const handleRefresh = () => {
-    setRefreshKey((k) => k + 1);
-  };
+  const handleRefresh = () => setRefreshKey((k) => k + 1);
 
   const handleResetData = () => {
-    if (confirm('¿Volver a los datos de demostración? Se borran los cambios que hiciste.')) {
+    if (confirm('¿Empezar de cero con los datos de demostración? Se pierde lo que cambiaste.')) {
       globalDb.clearAll();
       seedInitialDemoData(globalDb);
-      setRefreshKey((k) => k + 1);
+      setResetKey((k) => k + 1);
     }
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 font-sans">
-      {/* Barra de Navegación y Selector de Roles */}
-      <header className="sticky top-0 z-40 bg-stone-900 text-white border-b border-stone-800 shadow-md">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white shadow-xs">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <h1 className="font-bold text-base leading-tight tracking-tight">
-                Estudio de Yoga Andrea
-              </h1>
-              <p className="text-[11px] text-stone-400">
-                Paquetes, clases y avisos en un solo lugar
-              </p>
-            </div>
+    <div className="min-h-screen bg-[#F6F1E9] text-[#2E2A26] font-sans">
+      <header className="sticky top-0 z-40 bg-[#F6F1E9]/90 backdrop-blur border-b border-[#E4DDD2]">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Leaf className="w-5 h-5 text-[#4F5F45]" strokeWidth={1.5} aria-hidden />
+            <h1 className="text-lg font-semibold" style={SERIF}>Estudio Andrea</h1>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Selector de Rol */}
-            <div className="bg-stone-800 p-1 rounded-xl flex items-center gap-1 border border-stone-700">
-              <button
-                onClick={() => setRole('admin')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  role === 'admin'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-stone-400 hover:text-white'
-                }`}
-              >
-                <Shield className="w-3.5 h-3.5" />
-                Andrea
-              </button>
-
-              <button
-                onClick={() => setRole('instructor')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  role === 'instructor'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-stone-400 hover:text-white'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5" />
-                Instructora
-              </button>
-
-              <button
-                onClick={() => setRole('student')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  role === 'student'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-stone-400 hover:text-white'
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                Alumna
-              </button>
-            </div>
-
+            <nav aria-label="¿Quién eres?" className="flex rounded-full bg-white border border-[#E4DDD2] p-1">
+              {ROLES.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => setRole(r.id)}
+                  aria-pressed={role === r.id}
+                  className={`min-h-9 px-4 rounded-full text-sm font-medium transition ${
+                    role === r.id ? 'bg-[#4F5F45] text-white' : 'text-[#4F5F45] hover:bg-[#F6F1E9]'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </nav>
             <button
               onClick={handleResetData}
-              title="Volver a los datos de demostración" aria-label="Volver a los datos de demostración"
-              className="p-2 text-stone-400 hover:text-stone-200 bg-stone-800 hover:bg-stone-700 rounded-lg transition-colors border border-stone-700 text-xs flex items-center gap-1"
+              title="Empezar de cero"
+              aria-label="Empezar de cero con los datos de demostración"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-[#4F5F45] hover:bg-white"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RotateCcw className="w-4 h-4" strokeWidth={1.5} />
             </button>
           </div>
         </div>
+
+        {role === 'admin' && (
+          <div className="max-w-5xl mx-auto px-4 pb-3 flex gap-6 text-base">
+            {(['today', 'manage'] as AdminTab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setAdminTab(tab)}
+                aria-pressed={adminTab === tab}
+                className={`min-h-11 border-b-2 transition ${
+                  adminTab === tab ? 'border-[#4F5F45] font-semibold' : 'border-transparent text-[#4F5F45]'
+                }`}
+              >
+                {tab === 'today' ? 'Hoy' : 'Gestión'}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
-      {/* Contenedor Principal */}
-      <main className="max-w-6xl mx-auto px-4 py-6" key={refreshKey}>
-        {role === 'admin' && (
-          <AdminDashboard
-            db={globalDb}
-            packageService={packageService}
-            sessionService={sessionService}
-            onRefresh={handleRefresh}
-          />
-        )}
+      <main className="max-w-5xl mx-auto px-4 py-8" key={resetKey}>
+        <CalmErrorBoundary>
+          {role !== 'student' && (role === 'instructor' || adminTab === 'today') && (
+            <Today db={globalDb} sessionService={sessionService} onRefresh={handleRefresh} />
+          )}
 
-        {role === 'admin' && (
-          <div className="mt-8">
-            <StudentCard db={globalDb} packageService={packageService} canAdjust onRefresh={handleRefresh} />
-          </div>
-        )}
+          {role === 'admin' && adminTab === 'manage' && (
+            <div className="space-y-10">
+              <AdminDashboard
+                key={refreshKey}
+                db={globalDb}
+                packageService={packageService}
+                sessionService={sessionService}
+                onRefresh={handleRefresh}
+              />
+              <StudentCard db={globalDb} packageService={packageService} canAdjust onRefresh={handleRefresh} />
+            </div>
+          )}
 
-        {role === 'instructor' && (
-          <AttendanceList
-            db={globalDb}
-            packageService={packageService}
-            sessionService={sessionService}
-            onRefresh={handleRefresh}
-          />
-        )}
-
-        {role === 'student' && (
-          <div className="mb-8">
-            <StudentCard db={globalDb} packageService={packageService} />
-          </div>
-        )}
-
-        {role === 'student' && (
-          <StudentBooking
-            db={globalDb}
-            packageService={packageService}
-            sessionService={sessionService}
-            onRefresh={handleRefresh}
-          />
-        )}
+          {role === 'student' && <StudentCard db={globalDb} packageService={packageService} />}
+        </CalmErrorBoundary>
       </main>
 
-      {/* Footer informativo sobre alcance y contratos del sistema */}
-      <footer className="border-t border-stone-200 bg-white/70 py-4 mt-12 text-center text-xs text-stone-500">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5">
-            <Info className="w-3.5 h-3.5 text-emerald-700" />
-            Demo con datos ficticios. Cada clase tiene 12 lugares y lista de espera por orden de llegada.
-          </p>
-          <p className="text-[11px] text-stone-400">
-            Estudio de Yoga Andrea
-          </p>
-        </div>
+      <footer className="py-8 text-center text-sm text-[#4F5F45]">
+        Demo con datos ficticios · Estudio de Yoga Andrea
       </footer>
     </div>
   );
