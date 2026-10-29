@@ -17,7 +17,7 @@ describe('Escenario 4: Cancelación de emergencia por enfermedad de instructora 
 
   it('Escenario 4: GIVEN clase programada con N alumnas confirmadas, WHEN se cancela por "Enfermedad de instructora", THEN reembolsar +1 clase a cada confirmada y generar enlaces a WhatsApp API con texto codificado', () => {
     const session = sessionService.createSession({
-      instructor_name: 'Instructora 2',
+      instructor_name: 'Sofía',
       start_time: '2026-11-05T19:30:00Z',
       max_capacity: 12,
     });
@@ -90,14 +90,14 @@ describe('Escenario 4: Cancelación de emergencia por enfermedad de instructora 
   it('debe construir plantilla parametrizada con datos de sesión, instructora y alumna', () => {
     const alert = buildEmergencyCancellationAlert({
       studentName: 'Lucía Rossi',
-      instructorName: 'Instructora 2',
+      instructorName: 'Sofía',
       sessionDate: '2026-11-05',
       sessionTime: '19:30',
       reason: 'Enfermedad de instructora',
     });
 
     expect(alert).toContain('Lucía Rossi');
-    expect(alert).toContain('Instructora 2');
+    expect(alert).toContain('Sofía');
     expect(alert).toContain('19:30');
     expect(alert).toContain('Enfermedad de instructora');
     expect(alert).toContain('crédito');

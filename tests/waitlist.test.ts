@@ -17,7 +17,7 @@ describe('Escenario 2 y 3: Control de Aforo (12 max) y Lista de Espera FIFO (BDD
   it('Escenario 2: GIVEN una sesión vespertina con max_capacity = 12 con 12 reservas CONFIRMED, WHEN una 13ª alumna reserva, THEN no aumenta cupo confirmado, entra a WAITLIST con waitlist_position = 1, y NO se debita su saldo', () => {
     // 1. Crear sesión de tarde con cupo 12
     const session = sessionService.createSession({
-      instructor_name: 'Instructora 1',
+      instructor_name: 'Marta',
       start_time: new Date('2026-11-01T19:00:00Z').toISOString(),
       max_capacity: 12,
     });
