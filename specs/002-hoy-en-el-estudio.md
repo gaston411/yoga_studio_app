@@ -36,6 +36,7 @@ weeklyOccupancy(classes: TodayClass[]): { percent: number; label: string };
 attendanceMessage(name: string): string;
 ```
 - `taken` = reservas `CONFIRMED` + `ATTENDED`.
+- `percent` se **redondea hacia abajo** (`Math.floor`): 87,5 % es 87 %, y solo una clase realmente llena llega a 100 %.
 - Las clases `CANCELLED` no cuentan en el resumen ni en el termómetro.
 - "La próxima empieza en…": menos de 60 min → "en N min"; si no → "a las HH:MM" (24 h).
 
@@ -91,3 +92,4 @@ Prueba manual en el preview: abrir como Marta → tocar la clase de las 19:00 �
 | 1.0 | Versión inicial a partir de las sugerencias de UX "Calma Activa" | — |
 | 1.1 | Se sacan sustitución y modo "Fuera del Mat" a specs propias; el termómetro muestra ocupación y no ingresos | Un feature por spec; los pagos están fuera de alcance en `AGENTS.md` |
 | 1.2 | Se agrega el caso "día terminado" (CA2) | Sin él, a la noche la app seguía diciendo "La próxima empieza…" con una hora pasada |
+| 1.3 | Se define el redondeo del porcentaje (hacia abajo) | Al implementar, 21 de 24 (87,5 %) daba 88 con redondeo normal y CA4 fallaba. La spec no decía cómo redondear; con redondeo normal un 99,6 % se mostraría como "Lleno total" |
