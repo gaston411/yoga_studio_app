@@ -63,7 +63,7 @@ export function weeklyOccupancy(classes: TodayClass[]): Occupancy {
     return { percent: 0, label: 'Semana en blanco. Agenda la primera clase.' };
   }
   const taken = active.reduce((sum, c) => sum + Math.min(c.taken, c.capacity), 0);
-  const percent = Math.round((taken / capacity) * 100);
+  const percent = Math.floor((taken / capacity) * 100);
 
   let label = 'Mucho espacio para respirar.';
   if (percent >= 100) label = 'Lleno total. Hora de abrir otra clase.';
