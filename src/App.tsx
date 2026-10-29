@@ -10,6 +10,7 @@ import { SessionService } from './domain/sessions.ts';
 import { AdminDashboard } from './ui/AdminDashboard.tsx';
 import { AttendanceList } from './ui/AttendanceList.tsx';
 import { StudentBooking } from './ui/StudentBooking.tsx';
+import { StudentCard } from './ui/StudentCard.tsx';
 import {
   Sparkles,
   Shield,
@@ -126,6 +127,12 @@ export default function App() {
           />
         )}
 
+        {role === 'admin' && (
+          <div className="mt-8">
+            <StudentCard db={globalDb} packageService={packageService} canAdjust onRefresh={handleRefresh} />
+          </div>
+        )}
+
         {role === 'instructor' && (
           <AttendanceList
             db={globalDb}
@@ -133,6 +140,12 @@ export default function App() {
             sessionService={sessionService}
             onRefresh={handleRefresh}
           />
+        )}
+
+        {role === 'student' && (
+          <div className="mb-8">
+            <StudentCard db={globalDb} packageService={packageService} />
+          </div>
         )}
 
         {role === 'student' && (
