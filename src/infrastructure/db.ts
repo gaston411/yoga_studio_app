@@ -42,7 +42,7 @@ export interface PackageAuditLog {
   session_id?: string;
 }
 
-export type InstructorName = 'Instructora 1' | 'Instructora 2' | 'Andrea';
+export type InstructorName = 'Marta' | 'Sofía' | 'Andrea';
 export type SessionStatus = 'SCHEDULED' | 'CANCELLED' | 'SUBSTITUTED';
 
 export interface ClassSession {
@@ -64,7 +64,7 @@ export interface Booking {
   created_at: string;
 }
 
-const STORAGE_KEY = 'andrea_yoga_engine_v3';
+const STORAGE_KEY = 'andrea_yoga_engine_v4';
 
 export class Database {
   private students: Map<string, Student> = new Map();
@@ -399,10 +399,22 @@ export function seedInitialDemoData(db: Database) {
   });
 
   // Sesión 1: Hoy 19:00 hs con 11 alumnas confirmadas (1 cupo libre para probar el aforo de 12)
-  const today = new Date().toISOString().split('T')[0];
+  // Horarios en hora local de hoy, guardados en ISO 8601 (invariante 5 de AGENTS.md)
+  const todayAt = (h: number, m: number) => {
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d.toISOString();
+  };
+
+  // Sesión 0: Hoy 09:30 hs con Sofía, 4 alumnas anotadas
+  const s0 = db.createSession({ instructor_name: 'Sofía', start_time: todayAt(9, 30), max_capacity: 12 });
+  for (let i = 0; i < 4; i++) {
+    db.createBooking({ session_id: s0.id, student_id: students[i].id, booking_status: 'CONFIRMED' });
+  }
+
   const s1 = db.createSession({
     instructor_name: 'Andrea',
-    start_time: `${today}T19:00:00Z`,
+    start_time: todayAt(19, 0),
     max_capacity: 12,
   });
 
@@ -426,8 +438,8 @@ export function seedInitialDemoData(db: Database) {
 
   // Sesión 2: Hoy 20:15 hs con 12 confirmadas y 2 en espera (para probar FIFO y promoción por cancelación)
   const s2 = db.createSession({
-    instructor_name: 'Instructora 1',
-    start_time: `${today}T20:15:00Z`,
+    instructor_name: 'Marta',
+    start_time: todayAt(20, 15),
     max_capacity: 12,
   });
 
