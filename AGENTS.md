@@ -9,8 +9,10 @@ Reemplaza las tarjetas de papel selladas a mano, gestiona el cupo de las clases 
 
 Usuarias:
 - **Andrea (ADMIN):** da de alta paquetes, ajusta saldos, cancela/sustituye clases.
-- **Instructoras (INSTRUCTOR):** marcan asistencia desde el celular.
-- **Alumnas (STUDENT):** reservan y consultan su saldo. Usan solo el celular y no son técnicas.
+- **Instructoras (INSTRUCTOR) — Marta y Sofía en la demo:** marcan asistencia desde el celular.
+- **Alumnas (STUDENT):** solo consultan su tarjeta (saldo e historial). Usan solo el celular y no son técnicas.
+
+La app está pensada primero para Andrea y las instructoras: simple, rápida, que dé calma al usarla.
 
 ## 2. Alcance permanente
 **Dentro:** paquetes de 10 clases y su historial, reservas, cupo de 12 personas, lista de espera, avisos por WhatsApp (enlaces `wa.me`).
@@ -56,4 +58,4 @@ Usuarias:
 - Nombres de código en inglés; textos visibles en español neutro, trato de "tú".
 - Funciones pequeñas, sin `any`.
 - Botones de al menos 44 px de alto, legibles en celular, contraste AA.
-- La identidad visual se rige por la skill `skills/brand-design/SKILL.md`.
+- La identidad visual **y la voz** ("Calma Activa") se rigen por la skill `skills/brand-design/SKILL.md`. Todo texto visible pasa su checklist.
