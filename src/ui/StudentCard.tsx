@@ -18,7 +18,7 @@ interface StudentCardProps {
 
 const SERIF = { fontFamily: 'Fraunces, Georgia, "Times New Roman", serif' };
 
-const REASON_LABEL: Record<string, string> = {
+export const REASON_LABEL: Record<string, string> = {
   PACKAGE_CREATED: 'Alta de paquete',
   CLASS_ATTENDED: 'Clase tomada',
   MANUAL_ADJUSTMENT: 'Ajuste de Andrea',
@@ -27,7 +27,7 @@ const REASON_LABEL: Record<string, string> = {
   WAITLIST_PROMOTED: 'Lugar desde lista de espera',
 };
 
-const BY_LABEL: Record<string, string> = {
+export const BY_LABEL: Record<string, string> = {
   ADMIN: 'Andrea',
   INSTRUCTOR: 'Instructora',
   SYSTEM: 'Reserva',
