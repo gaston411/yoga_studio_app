@@ -11,8 +11,9 @@ Demo: https://yoga-studio-app-vert.vercel.app
 | 2. Especificación del feature principal | [`specs/001-paquetes-con-historial.md`](specs/001-paquetes-con-historial.md) |
 | 3. Skill de diseño de marca | [`skills/brand-design/SKILL.md`](skills/brand-design/SKILL.md) |
 | 4. Implementación | `src/domain/packages.ts`, `src/ui/StudentCard.tsx`, `tests/packages.test.ts` |
+| Extra: spec 002 "Hoy" | [`specs/002-hoy-en-el-estudio.md`](specs/002-hoy-en-el-estudio.md), `src/domain/today.ts`, `src/ui/Today.tsx`, `tests/today.test.ts` |
 
-El historial de commits de la rama `feat/001-saldo-verificable` sigue el ciclo SDD: documentos → tests en rojo → dominio en verde → UI.
+Cada feature sigue el ciclo SDD en sus commits: spec → tests en rojo → dominio en verde → UI. Si un criterio falla, se corrige primero la spec (ver el registro de cambios de cada spec).
 
 ## Correr el proyecto
 ```bash
