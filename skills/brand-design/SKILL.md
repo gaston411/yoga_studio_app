@@ -41,14 +41,40 @@ Contraste mínimo AA. No uses negro puro ni blanco puro de fondo.
 ## Iconografía
 Iconos de línea (Lucide), trazo 1.5. Motivo decorativo opcional: hoja o círculo de respiración. Nada de mandalas recargados.
 
-## Voz y tono
-- Tutea, frases cortas, sin tecnicismos ("saldo", no "balance").
-- Errores en positivo y con salida: "No te quedan clases. Habla con Andrea para renovar tu paquete."
-- Mensajes de WhatsApp: saludo con el nombre, el dato, cierre amable. Máximo un emoji (🌿).
-  Ejemplo: "Hola Lucía 🌿 La clase de hoy 19:00 se cancela porque la instructora está enferma. Tu clase no se descuenta."
+## Voz: "Calma Activa"
+La app habla como la instructora con más años en el estudio: tiene todo bajo control con una mirada y no da rodeos.
+
+**Tres adjetivos:** fluida, ultra-directa, cómplice.
+**Límites:** cómplice, pero no cursi. Directa, pero no seca. Con guiños de yoga, pero sin sermones ni frases de taza.
+
+### Reglas de escritura
+1. **Escribe como hablas.** Léelo en voz alta: si no se lo dirías a Andrea en la recepción, cámbialo.
+2. **Voz activa y presente.** "Guardamos el ajuste", no "El ajuste ha sido guardado".
+3. **Fragmentos con ritmo.** Se vale empezar con "Y" o "Pero" y usar frases sin verbo: "Mat desplegado."
+4. **Una idea por pantalla.** Título corto (2–5 palabras) + una línea de detalle como máximo.
+5. **Botones = verbos de lo que pasa.** "Hecho", "Agendar", "Liberar lugar", "Dar de alta". Nunca "Aceptar", "Enviar", "OK".
+6. **Números concretos.** "Quedan 3 lugares", no "Hay disponibilidad".
+
+### Cuándo ser original y cuándo no
+| Momento | Tono | Ejemplo |
+|---|---|---|
+| Bienvenida / inicio | Cómplice, con guiño | "Hoy fluyes con 3 clases." |
+| Éxito | Breve, con imagen de yoga | "Mat desplegado. Lucía ya está en la sala." |
+| Carga | Respiración | "Inhala… exhala… Ya casi." |
+| Error de la app | Humano, admite la falla | "Perdimos el equilibrio. Algo se cayó por aquí." + [Reintentar] |
+| **Saldo, cobros, cancelaciones** | **Sobrio y claro, sin chistes** | "No te quedan clases. Habla con Andrea para renovar tu paquete." |
+
+### Palabras prohibidas (suenan a sistema o a IA)
+"usuario", "sistema", "procesar", "exitosamente", "por favor espere", "registro completado", "FIFO", "auditoría", "débito", "crédito", "aforo", "sesión", "API", "¡Excelente!", "¡Genial!".
+
+### WhatsApp
+Saludo con el nombre, el dato, cierre amable. Máximo un emoji (🌿).
+Ejemplo: "Hola Lucía 🌿 La clase de hoy 19:00 se cancela porque Marta está enferma. Tu clase no se descuenta."
 
 ## Checklist antes de entregar una pantalla
 - [ ] Solo usa los tokens de color de esta skill.
 - [ ] Se ve bien a 360 px de ancho.
 - [ ] Botones ≥ 44 px, texto ≥ 14 px.
-- [ ] Textos en español, con "tú", sin tecnicismos.
+- [ ] Textos en español, con "tú", sin tecnicismos ni palabras prohibidas.
+- [ ] Cada botón es un verbo de lo que pasa.
+- [ ] Los mensajes de saldo y errores son sobrios.

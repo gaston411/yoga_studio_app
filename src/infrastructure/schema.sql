@@ -33,7 +33,7 @@ CREATE TABLE package_audit_log (
 -- Clases / Sesiones (límite vespertino: 12 cupos)
 CREATE TABLE class_sessions (
     id UUID PRIMARY KEY,
-    instructor_name VARCHAR(50) NOT NULL CHECK (instructor_name IN ('Instructora 1', 'Instructora 2', 'Andrea')),
+    instructor_name VARCHAR(50) NOT NULL CHECK (instructor_name IN ('Marta', 'Sofía', 'Andrea')),
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     max_capacity INT DEFAULT 12,
     status VARCHAR(20) DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'CANCELLED', 'SUBSTITUTED'))
