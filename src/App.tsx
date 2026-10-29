@@ -10,6 +10,7 @@ import { SessionService } from './domain/sessions.ts';
 import { AdminDashboard } from './ui/AdminDashboard.tsx';
 import { AttendanceList } from './ui/AttendanceList.tsx';
 import { StudentBooking } from './ui/StudentBooking.tsx';
+import { StudentCard } from './ui/StudentCard.tsx';
 import {
   Sparkles,
   Shield,
@@ -38,7 +39,7 @@ export default function App() {
   };
 
   const handleResetData = () => {
-    if (confirm('¿Restablecer datos de prueba iniciales con los 4 escenarios BDD preparados?')) {
+    if (confirm('¿Volver a los datos de demostración? Se borran los cambios que hiciste.')) {
       globalDb.clearAll();
       seedInitialDemoData(globalDb);
       setRefreshKey((k) => k + 1);
@@ -56,10 +57,10 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-base leading-tight tracking-tight">
-                Andrea Yoga Studio Engine
+                Estudio de Yoga Andrea
               </h1>
               <p className="text-[11px] text-stone-400">
-                Sistema Operativo • Aforo 12 máx • Auditoría de Paquetes • WhatsApp API
+                Paquetes, clases y avisos en un solo lugar
               </p>
             </div>
           </div>
@@ -76,7 +77,7 @@ export default function App() {
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
-                Andrea (Admin)
+                Andrea
               </button>
 
               <button
@@ -100,13 +101,13 @@ export default function App() {
                 }`}
               >
                 <Smartphone className="w-3.5 h-3.5" />
-                Alumna (Móvil)
+                Alumna
               </button>
             </div>
 
             <button
               onClick={handleResetData}
-              title="Restablecer datos de simulación"
+              title="Volver a los datos de demostración" aria-label="Volver a los datos de demostración"
               className="p-2 text-stone-400 hover:text-stone-200 bg-stone-800 hover:bg-stone-700 rounded-lg transition-colors border border-stone-700 text-xs flex items-center gap-1"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -126,6 +127,12 @@ export default function App() {
           />
         )}
 
+        {role === 'admin' && (
+          <div className="mt-8">
+            <StudentCard db={globalDb} packageService={packageService} canAdjust onRefresh={handleRefresh} />
+          </div>
+        )}
+
         {role === 'instructor' && (
           <AttendanceList
             db={globalDb}
@@ -133,6 +140,12 @@ export default function App() {
             sessionService={sessionService}
             onRefresh={handleRefresh}
           />
+        )}
+
+        {role === 'student' && (
+          <div className="mb-8">
+            <StudentCard db={globalDb} packageService={packageService} />
+          </div>
         )}
 
         {role === 'student' && (
@@ -150,10 +163,10 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-emerald-700" />
-            Motor operativo con aforo estricto de 12 cupos y cola de prioridad FIFO. Cobro físico/transferencia.
+            Demo con datos ficticios. Cada clase tiene 12 lugares y lista de espera por orden de llegada.
           </p>
           <p className="text-[11px] text-stone-400">
-            Andrea Yoga Estudio • Sistema de Gestión y Contingencias
+            Estudio de Yoga Andrea
           </p>
         </div>
       </footer>

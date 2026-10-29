@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Database, Student } from '../infrastructure/db.ts';
 import { PackageService } from '../domain/packages.ts';
+import { REASON_LABEL, BY_LABEL } from './StudentCard.tsx';
 import { SessionService } from '../domain/sessions.ts';
 import {
   Sparkles,
@@ -57,12 +58,12 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
       if (booking.booking_status === 'CONFIRMED') {
         setFeedback({
           type: 'success',
-          message: '¡Lugar confirmado! Se debitó 1 clase de tu paquete activo.',
+          message: '¡Listo, tienes tu lugar! Se descontó 1 clase de tu paquete.',
         });
       } else {
         setFeedback({
           type: 'info',
-          message: `Clase completa. Has ingresado a la Lista de Espera en la Posición #${booking.waitlist_position}. Tu saldo NO será debitado hasta que se confirme tu lugar.`,
+          message: `La clase está completa. Quedaste en el lugar ${booking.waitlist_position} de la lista de espera. No se descuenta ninguna clase hasta que tengas lugar.`,
         });
       }
       onRefresh();
@@ -167,7 +168,7 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
               {activePackage && activePackage.remaining_classes === 1
                 ? '¡Última clase de tu paquete!'
                 : activePackage
-                ? 'Control transaccional y auditoría inmutable'
+                ? 'Cada clase queda registrada'
                 : 'Contacta a Andrea para renovar tu paquete'}
             </span>
 
@@ -205,9 +206,9 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
                     className="flex justify-between items-center p-2 rounded-lg bg-stone-50 border border-stone-100"
                   >
                     <div>
-                      <span className="font-semibold text-stone-800 block">{log.reason}</span>
+                      <span className="font-semibold text-stone-800 block">{REASON_LABEL[log.reason] ?? log.reason}</span>
                       <span className="text-[10px] text-stone-400">
-                        {new Date(log.timestamp).toLocaleDateString()} • {log.performed_by}
+                        {new Date(log.timestamp).toLocaleDateString('es-AR')} • {BY_LABEL[log.performed_by] ?? log.performed_by}
                       </span>
                     </div>
                     <span
@@ -255,7 +256,7 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
 
         {sessions.length === 0 ? (
           <div className="bg-white rounded-2xl p-6 text-center text-stone-400 text-xs border border-stone-200">
-            No hay clases vespertinas programadas actualmente.
+            Por ahora no hay clases programadas.
           </div>
         ) : (
           sessions.map((session) => {
@@ -328,7 +329,7 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
                 {/* Mensaje de espera si hay cola */}
                 {isFull && !isCancelled && waitlistedBookings.length > 0 && (
                   <p className="text-[10px] text-amber-700 mb-2">
-                    {waitlistedBookings.length} en lista de espera FIFO
+                    {waitlistedBookings.length} en lista de espera
                   </p>
                 )}
 
@@ -336,7 +337,7 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
                 <div className="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
                   {isCancelled ? (
                     <span className="text-xs font-semibold text-red-700">
-                      Clase suspendida por contingencia (crédito restituido).
+                      Clase cancelada. Te devolvimos la clase.
                     </span>
                   ) : isConfirmed ? (
                     <div className="w-full flex items-center justify-between">
@@ -402,9 +403,9 @@ export const StudentBooking: React.FC<StudentBookingProps> = ({
           <HelpCircle className="w-3.5 h-3.5 text-stone-500" />
           Reglas del Estudio Andrea Yoga:
         </span>
-        <p>• El aforo vespertino máximo es de 12 personas para garantizar la práctica personalizada.</p>
-        <p>• La lista de espera funciona por orden de llegada (FIFO). Si alguien cancela, entras automáticamente.</p>
-        <p>• Tu crédito de clase NO se debita mientras estés en lista de espera.</p>
+        <p>• Cada clase de la tarde tiene 12 lugares, para que la práctica sea personalizada.</p>
+        <p>• La lista de espera respeta el orden de llegada. Si alguien cancela, entras automáticamente y te avisamos.</p>
+        <p>• Mientras estés en lista de espera, no se descuenta ninguna clase de tu paquete.</p>
       </div>
     </div>
   );

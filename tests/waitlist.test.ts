@@ -78,14 +78,14 @@ describe('Escenario 2 y 3: Control de Aforo (12 max) y Lista de Espera FIFO (BDD
     }
 
     // Alumna en espera 1
-    const waitlistedStudent1 = db.createStudent({ name: 'Marina Espera', phone: '+5491122223333' });
+    const waitlistedStudent1 = db.createStudent({ name: 'Marina Espera', phone: '+5491100000016' });
     const pkgWaitlist1 = packageService.createPackage(waitlistedStudent1.id, 10, 'ADMIN');
     const bookingWaitlist1 = sessionService.bookSession(session.id, waitlistedStudent1.id);
     expect(bookingWaitlist1.booking_status).toBe('WAITLISTED');
     expect(bookingWaitlist1.waitlist_position).toBe(1);
 
     // Alumna en espera 2
-    const waitlistedStudent2 = db.createStudent({ name: 'Valeria Segunda', phone: '+5491144445555' });
+    const waitlistedStudent2 = db.createStudent({ name: 'Valeria Segunda', phone: '+5491100000017' });
     packageService.createPackage(waitlistedStudent2.id, 10, 'ADMIN');
     const bookingWaitlist2 = sessionService.bookSession(session.id, waitlistedStudent2.id);
     expect(bookingWaitlist2.waitlist_position).toBe(2);

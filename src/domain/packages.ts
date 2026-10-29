@@ -11,6 +11,33 @@ import {
   AuditPerformedBy,
 } from '../infrastructure/db.ts';
 
+export const PACKAGE_SIZE = 10;
+export const NO_BALANCE_MESSAGE = 'No te quedan clases. Habla con Andrea para renovar tu paquete.';
+
+export type PackageErrorCode =
+  | 'NO_BALANCE'
+  | 'ALREADY_REGISTERED'
+  | 'ACTIVE_PACKAGE_EXISTS'
+  | 'NOTE_REQUIRED'
+  | 'OUT_OF_RANGE'
+  | 'NOT_FOUND';
+
+/** Error de dominio con código verificable (spec 001). */
+export class PackageError extends Error {
+  public readonly code: PackageErrorCode;
+  constructor(code: PackageErrorCode, message: string) {
+    super(message);
+    this.code = code;
+    this.name = 'PackageError';
+  }
+}
+
+export interface StudentCard {
+  package: ClassPackage | undefined;
+  remainingClasses: number;
+  history: PackageAuditLog[]; // más reciente primero
+}
+
 export class PackageService {
   private db: Database;
   // Mutex lock to prevent race conditions during concurrent debits
@@ -32,6 +59,12 @@ export class PackageService {
     if (totalClasses <= 0) {
       throw new Error('La cantidad de clases del paquete debe ser mayor a 0');
     }
+    if (this.db.getPackagesByStudentId(studentId).some((p) => p.status === 'ACTIVE')) {
+      throw new PackageError(
+        'ACTIVE_PACKAGE_EXISTS',
+        'Esta alumna ya tiene un paquete activo. Úsalo hasta terminarlo antes de dar de alta otro.'
+      );
+    }
 
     const pkg = this.db.createPackage({
       student_id: studentId,
@@ -43,7 +76,7 @@ export class PackageService {
     this.db.addAuditLog({
       package_id: pkg.id,
       delta: totalClasses,
-      reason: 'MANUAL_ADJUSTMENT',
+      reason: 'PACKAGE_CREATED',
       performed_by: performedBy,
     });
 
@@ -80,15 +113,16 @@ export class PackageService {
   public debitClass(
     packageId: string,
     reason: AuditReason = 'CLASS_ATTENDED',
-    performedBy: AuditPerformedBy = 'SYSTEM'
+    performedBy: AuditPerformedBy = 'SYSTEM',
+    sessionId?: string
   ): ClassPackage {
     const pkg = this.db.getPackageById(packageId);
     if (!pkg) {
-      throw new Error(`Paquete no encontrado: ${packageId}`);
+      throw new PackageError('NOT_FOUND', `Paquete no encontrado: ${packageId}`);
     }
 
     if (pkg.status !== 'ACTIVE' || pkg.remaining_classes <= 0) {
-      throw new Error('Saldo insuficiente: el paquete está agotado o inactivo. No tiene clases disponibles.');
+      throw new PackageError('NO_BALANCE', NO_BALANCE_MESSAGE);
     }
 
     const newRemaining = pkg.remaining_classes - 1;
@@ -104,6 +138,7 @@ export class PackageService {
       delta: -1,
       reason,
       performed_by: performedBy,
+      session_id: sessionId,
     });
 
     return updated;
@@ -116,7 +151,8 @@ export class PackageService {
   public refundClass(
     packageId: string,
     reason: AuditReason = 'EMERGENCY_CANCEL_REFUND',
-    performedBy: AuditPerformedBy = 'SYSTEM'
+    performedBy: AuditPerformedBy = 'SYSTEM',
+    sessionId?: string
   ): ClassPackage {
     const pkg = this.db.getPackageById(packageId);
     if (!pkg) {
@@ -136,9 +172,87 @@ export class PackageService {
       delta: 1,
       reason,
       performed_by: performedBy,
+      session_id: sessionId,
     });
 
     return updated;
+  }
+
+  /** Neto de clases cobradas a una alumna por una sesión (negativo = ya se cobró). */
+  public chargedForSession(studentId: string, sessionId: string): number {
+    return this.db
+      .getPackagesByStudentId(studentId)
+      .flatMap((p) => this.db.getAuditLogsByPackageId(p.id))
+      .filter((l) => l.session_id === sessionId)
+      .reduce((sum, l) => sum + l.delta, 0);
+  }
+
+  /**
+   * Spec 001: descuenta 1 clase por asistencia y deja rastro con la sesión y quién la marcó.
+   * Rechaza ALREADY_REGISTERED si esa clase ya se cobró y NO_BALANCE si no hay saldo.
+   */
+  public registerAttendance(
+    studentId: string,
+    sessionId: string,
+    by: AuditPerformedBy = 'INSTRUCTOR'
+  ): ClassPackage {
+    if (this.chargedForSession(studentId, sessionId) < 0) {
+      throw new PackageError(
+        'ALREADY_REGISTERED',
+        'La asistencia de esta alumna ya está registrada en esta clase.'
+      );
+    }
+    const pkg = this.getActivePackage(studentId);
+    if (!pkg) {
+      throw new PackageError('NO_BALANCE', NO_BALANCE_MESSAGE);
+    }
+    return this.debitClass(pkg.id, 'CLASS_ATTENDED', by, sessionId);
+  }
+
+  /** Spec 001: ajuste manual solo de ADMIN, con nota obligatoria y resultado entre 0 y 10. */
+  public adjustBalance(packageId: string, delta: number, note: string): ClassPackage {
+    const cleanNote = note.trim();
+    if (!cleanNote) {
+      throw new PackageError('NOTE_REQUIRED', 'Escribe el motivo del ajuste.');
+    }
+    if (!Number.isInteger(delta) || delta === 0) {
+      throw new PackageError('OUT_OF_RANGE', 'El ajuste debe ser un número entero distinto de 0.');
+    }
+    const pkg = this.db.getPackageById(packageId);
+    if (!pkg) {
+      throw new PackageError('NOT_FOUND', `Paquete no encontrado: ${packageId}`);
+    }
+    const next = pkg.remaining_classes + delta;
+    if (next < 0 || next > pkg.total_classes) {
+      throw new PackageError(
+        'OUT_OF_RANGE',
+        `El saldo resultante debe estar entre 0 y ${pkg.total_classes}.`
+      );
+    }
+    const updated = this.db.updatePackage(packageId, {
+      remaining_classes: next,
+      status: next === 0 ? 'EXHAUSTED' : 'ACTIVE',
+    });
+    this.db.addAuditLog({
+      package_id: packageId,
+      delta,
+      reason: 'MANUAL_ADJUSTMENT',
+      performed_by: 'ADMIN',
+      note: cleanNote.slice(0, 200),
+    });
+    return updated;
+  }
+
+  /** Spec 001: tarjeta digital = paquete más reciente + historial del más nuevo al más antiguo. */
+  public getCard(studentId: string): StudentCard {
+    const packages = this.db
+      .getPackagesByStudentId(studentId)
+      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const pkg = packages.find((p) => p.status === 'ACTIVE') ?? packages[0];
+    const history = pkg
+      ? this.db.getAuditLogsByPackageId(pkg.id).reverse()
+      : [];
+    return { package: pkg, remainingClasses: pkg?.remaining_classes ?? 0, history };
   }
 
   /**

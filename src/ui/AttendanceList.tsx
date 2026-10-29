@@ -63,7 +63,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const handleEarlyCancel = (studentId: string, studentName: string) => {
-    if (!confirm(`¿Confirmas la cancelación anticipada del turno de ${studentName}? Si hay lista de espera, se promoverá automáticamente a la siguiente alumna (FIFO).`)) {
+    if (!confirm(`¿Confirmas la cancelación anticipada del turno de ${studentName}? Si hay lista de espera, el lugar pasa a la primera de la lista.`)) {
       return;
     }
     try {
@@ -72,10 +72,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         setNotificationModal(res.promotionNotification);
         setMessage({
           type: 'success',
-          text: `Turno cancelado. ¡Se promovió automáticamente a ${res.promotedStudent.name} de la lista de espera!`,
+          text: `Reserva cancelada. ${res.promotedStudent.name} pasó de la lista de espera a la clase.`,
         });
       } else {
-        setMessage({ type: 'success', text: 'Turno cancelado y crédito reembolsado a la alumna.' });
+        setMessage({ type: 'success', text: 'Reserva cancelada. Se le devolvió la clase a la alumna.' });
       }
       onRefresh();
     } catch (err: unknown) {
@@ -92,9 +92,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             <span className="text-xs font-semibold tracking-wider uppercase text-emerald-400">
               Vista Operativa en Estudio
             </span>
-            <h2 className="text-2xl font-bold mt-1 text-white">Lista de Asistencia & Aforo</h2>
+            <h2 className="text-2xl font-bold mt-1 text-white">Asistencia de la clase</h2>
             <p className="text-stone-300 text-sm mt-0.5">
-              Control presencial para el ingreso de alumnas y gestión FIFO en caso de cancelaciones.
+              Marca quién vino. Cada asistencia descuenta 1 clase del paquete.
             </p>
           </div>
 
@@ -163,10 +163,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           <div className="space-y-1">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
               <CheckCircle className="w-4 h-4 text-emerald-600" />
-              Promoción Automática FIFO Exitosa
+              ¡Se liberó un lugar!
             </span>
             <p className="text-sm font-semibold text-emerald-950">
-              Se asignó el cupo liberado a la primera alumna en lista de espera y se debitó su clase.
+              La primera de la lista de espera ya tiene su lugar. Avísale por WhatsApp.
             </p>
             <p className="text-xs text-stone-600">
               Notifícala ahora por WhatsApp para que asista al estudio:
@@ -270,7 +270,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
                         <button
                           onClick={() => handleEarlyCancel(student.id, student.name)}
-                          title="Cancelar reserva de la alumna y promover lista de espera"
+                          title="Cancelar la reserva de esta alumna"
                           className="p-1.5 text-stone-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <XCircle className="w-4 h-4" />
@@ -283,12 +283,12 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             </div>
           </div>
 
-          {/* Columna Derecha: Lista de Espera FIFO */}
+          {/* Columna Derecha: Lista de espera */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-stone-200 lg:col-span-1">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-stone-100">
               <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-amber-600" />
-                Lista de Espera FIFO
+                Lista de espera
               </h3>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
                 {waitlistedBookings.length} en espera
@@ -296,13 +296,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             </div>
 
             <p className="text-xs text-stone-500 mb-4">
-              Orden estricto de llegada (FIFO). La posición 1 será promovida automáticamente si se cancela un cupo confirmado.
+              Por orden de llegada. Si alguien cancela, la primera de la lista entra automáticamente.
             </p>
 
             <div className="space-y-2">
               {waitlistedBookings.length === 0 ? (
                 <div className="p-6 text-center text-stone-400 text-xs border border-dashed rounded-xl">
-                  No hay alumnas en espera. El aforo está disponible o dentro de los 12 lugares.
+                  No hay nadie en espera.
                 </div>
               ) : (
                 waitlistedBookings.map((booking) => {

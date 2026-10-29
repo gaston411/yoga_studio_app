@@ -22,13 +22,14 @@ export interface ClassPackage {
 }
 
 export type AuditReason =
+  | 'PACKAGE_CREATED'
   | 'CLASS_ATTENDED'
   | 'MANUAL_ADJUSTMENT'
   | 'LATE_CANCEL_CHARGE'
   | 'EMERGENCY_CANCEL_REFUND'
   | 'WAITLIST_PROMOTED';
 
-export type AuditPerformedBy = 'ADMIN' | 'SYSTEM';
+export type AuditPerformedBy = 'ADMIN' | 'INSTRUCTOR' | 'SYSTEM';
 
 export interface PackageAuditLog {
   id: string;
@@ -37,6 +38,8 @@ export interface PackageAuditLog {
   reason: AuditReason;
   performed_by: AuditPerformedBy;
   timestamp: string;
+  note?: string;
+  session_id?: string;
 }
 
 export type InstructorName = 'Instructora 1' | 'Instructora 2' | 'Andrea';
@@ -61,7 +64,7 @@ export interface Booking {
   created_at: string;
 }
 
-const STORAGE_KEY = 'andrea_yoga_engine_v1';
+const STORAGE_KEY = 'andrea_yoga_engine_v3';
 
 export class Database {
   private students: Map<string, Student> = new Map();
@@ -214,6 +217,8 @@ export class Database {
     delta: number;
     reason: AuditReason;
     performed_by: AuditPerformedBy;
+    note?: string;
+    session_id?: string;
   }): PackageAuditLog {
     const log: PackageAuditLog = {
       id: this.generateId(),
@@ -222,6 +227,8 @@ export class Database {
       reason: entry.reason,
       performed_by: entry.performed_by,
       timestamp: new Date().toISOString(),
+      ...(entry.note ? { note: entry.note } : {}),
+      ...(entry.session_id ? { session_id: entry.session_id } : {}),
     };
     this.auditLogs.push(log);
     this.saveToStorage();
@@ -357,20 +364,20 @@ export function seedInitialDemoData(db: Database) {
   if (db.getAllStudents().length > 0) return;
 
   const names = [
-    { name: 'Camila Rossi', phone: '+5491145218899' },
-    { name: 'Valentina Gomez', phone: '+5491155327788' },
-    { name: 'Lucia Alvarez', phone: '+5491166436677' },
-    { name: 'Mariana Castro', phone: '+5491177545566' },
-    { name: 'Florencia Diaz', phone: '+5491188654455' },
-    { name: 'Sofia Romero', phone: '+5491199763344' },
-    { name: 'Martina Benitez', phone: '+5491122872233' },
-    { name: 'Julieta Silva', phone: '+5491133981122' },
-    { name: 'Agustina Perez', phone: '+5491144090011' },
-    { name: 'Paula Molina', phone: '+5491155109900' },
-    { name: 'Daniela Ortiz', phone: '+5491166218800' },
-    { name: 'Carolina Ruiz', phone: '+5491177327700' },
-    { name: 'Belen Suarez', phone: '+5491188436600' },
-    { name: 'Micaela Torres', phone: '+5491199545500' },
+    { name: 'Camila Rossi', phone: '+5491100000001' },
+    { name: 'Valentina Gomez', phone: '+5491100000002' },
+    { name: 'Lucia Alvarez', phone: '+5491100000003' },
+    { name: 'Mariana Castro', phone: '+5491100000004' },
+    { name: 'Florencia Diaz', phone: '+5491100000005' },
+    { name: 'Sofia Romero', phone: '+5491100000006' },
+    { name: 'Martina Benitez', phone: '+5491100000007' },
+    { name: 'Julieta Silva', phone: '+5491100000008' },
+    { name: 'Agustina Perez', phone: '+5491100000009' },
+    { name: 'Paula Molina', phone: '+5491100000010' },
+    { name: 'Daniela Ortiz', phone: '+5491100000011' },
+    { name: 'Carolina Ruiz', phone: '+5491100000012' },
+    { name: 'Belen Suarez', phone: '+5491100000013' },
+    { name: 'Micaela Torres', phone: '+5491100000014' },
   ];
 
   const students = names.map((item) => db.createStudent(item));
@@ -386,7 +393,7 @@ export function seedInitialDemoData(db: Database) {
     db.addAuditLog({
       package_id: pkg.id,
       delta: 10,
-      reason: 'MANUAL_ADJUSTMENT',
+      reason: 'PACKAGE_CREATED',
       performed_by: 'ADMIN',
     });
   });
@@ -408,6 +415,7 @@ export function seedInitialDemoData(db: Database) {
       delta: -1,
       reason: 'CLASS_ATTENDED',
       performed_by: 'SYSTEM',
+      session_id: s1.id,
     });
     db.createBooking({
       session_id: s1.id,
