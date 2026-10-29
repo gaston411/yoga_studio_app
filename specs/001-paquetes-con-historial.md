@@ -87,10 +87,22 @@ y un ajuste manual sin nota se rechaza.
 `npm test` debe pasar `tests/packages.test.ts`, con un test por cada CA (nombrados `CA1`…`CA5`).
 Prueba manual: alta → 3 asistencias → la tarjeta de la alumna muestra 7 y 4 movimientos.
 
-## 5. Registro de cambios de la spec
+## 5. Resultado de la implementación
+| CA | Test | Estado |
+|---|---|---|
+| CA1 | `CA1 — Alta de paquete…` | ✅ |
+| CA2 | `CA2 — Asistencia descuenta 1…` | ✅ |
+| CA3 | `CA3 — Sin doble descuento…` | ✅ |
+| CA4 | `CA4 — Saldo nunca negativo…` | ✅ |
+| CA5 | `CA5 — El historial explica el saldo…` | ✅ |
+
+Los 5 tests fallaron con el dominio previo (rojo) y pasan con la implementación (verde).
+
+## 6. Registro de cambios de la spec
 | Versión | Cambio | Motivo |
 |---|---|---|
 | 1.0 | Versión inicial generada con IA desde el prompt de la tarea 1 | — |
 | 1.1 | Se reduce a un solo feature (antes había 4 escenarios) y se agrega CA3 | El prompt original mezclaba cupo, espera y avisos; el doble descuento no estaba cubierto |
 | 1.2 | Se agrega CA5 y la nota obligatoria en ajustes | Sin esto, el historial podía no cuadrar con el saldo y la disputa seguía sin resolverse |
 | 1.3 | Se autorizan `sessions.ts` y `App.tsx` y se agregan notas de integración | Al implementar sobre el repo existente, la asistencia se registraba en `sessions.ts` sin pasar por el saldo, y la tarjeta no tenía dónde mostrarse. Se corrigió la spec antes de tocar código |
+| 1.4 | Se eliminan dependencias sin uso (`@google/genai`, `express`, `dotenv`, `tsx`) y las fuentes de marca usan respaldo del sistema | Revisión de seguridad para repo público: menos superficie de ataque y ninguna llamada a servicios externos |

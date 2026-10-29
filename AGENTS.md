@@ -43,7 +43,16 @@ Usuarias:
 5. Si un criterio no se cumple, se corrige la spec primero, luego se reimplementa.
 6. Al terminar, reporta qué criterio cubre cada test.
 
-## 6. Estilo de código y UI
+## 6. Seguridad (el repositorio es público)
+1. **Nunca** subas credenciales: API keys, tokens, contraseñas, `.env`. Solo existe `.env.example` con valores de ejemplo.
+2. Antes de cada commit, revisa el diff buscando secretos (`AIza…`, `sk-…`, `ghp_…`, claves privadas).
+3. No pongas datos personales reales en el código ni en los datos de demo: usa nombres y teléfonos ficticios.
+4. Los enlaces de WhatsApp se arman con `encodeURIComponent` y se abren con `rel="noopener noreferrer"`.
+5. Valida y limita el largo de toda entrada de texto. No uses `dangerouslySetInnerHTML` ni `eval`.
+6. No agregues dependencias sin uso; corre `bun audit` antes de entregar.
+7. La app guarda datos en `localStorage` del navegador: es una demo, no un sistema con login. No la uses con datos reales sin agregar autenticación y backend (fuera de alcance).
+
+## 7. Estilo de código y UI
 - Nombres de código en inglés; textos visibles en español neutro, trato de "tú".
 - Funciones pequeñas, sin `any`.
 - Botones de al menos 44 px de alto, legibles en celular, contraste AA.
