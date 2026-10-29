@@ -23,9 +23,9 @@ describe('Escenario 4: Cancelación de emergencia por enfermedad de instructora 
     });
 
     // Registrar 3 alumnas con paquetes de 5 clases
-    const s1 = db.createStudent({ name: 'Camila Perez', phone: '+5491166778899' });
-    const s2 = db.createStudent({ name: 'Mariana Lopez', phone: '+5491177889900' });
-    const s3 = db.createStudent({ name: 'Juana Gomez', phone: '+5491188990011' });
+    const s1 = db.createStudent({ name: 'Camila Perez', phone: '+5491100000018' });
+    const s2 = db.createStudent({ name: 'Mariana Lopez', phone: '+5491100000019' });
+    const s3 = db.createStudent({ name: 'Juana Gomez', phone: '+5491100000020' });
 
     const p1 = packageService.createPackage(s1.id, 5, 'ADMIN');
     const p2 = packageService.createPackage(s2.id, 5, 'ADMIN');
