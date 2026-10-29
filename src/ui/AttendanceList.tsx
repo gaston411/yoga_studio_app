@@ -30,7 +30,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   sessionService,
   onRefresh,
 }) => {
-  const [selectedInstructor, setSelectedInstructor] = useState<InstructorName>('Instructora 1');
+  const [selectedInstructor, setSelectedInstructor] = useState<InstructorName>('Marta');
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [notificationModal, setNotificationModal] = useState<CancellationResult['promotionNotification'] | null>(
     null
@@ -105,8 +105,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               onChange={(e) => setSelectedInstructor(e.target.value as InstructorName)}
               className="bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg border border-stone-700 focus:outline-none"
             >
-              <option value="Instructora 1">Instructora 1</option>
-              <option value="Instructora 2">Instructora 2</option>
+              <option value="Marta">Instructora 1</option>
+              <option value="Sofía">Instructora 2</option>
               <option value="Andrea">Andrea</option>
             </select>
           </div>
