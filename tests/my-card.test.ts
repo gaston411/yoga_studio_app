@@ -75,6 +75,7 @@ describe('Spec 003 — Mi tarjeta en un toque', () => {
       otherVersion.slice(otherVersion.indexOf('#')),
       negative.slice(negative.indexOf('#')),
       `#t=${'A'.repeat(4001)}`,
+      encodeCardLink({ ...snap, at: '2026-11-03' }, BASE).split(BASE)[1], // sin zona horaria
     ]) {
       expect(() => decodeCardHash(bad)).not.toThrow();
       expect(decodeCardHash(bad)).toBeNull();
@@ -169,6 +170,8 @@ describe('Spec 003 — Mi tarjeta en un toque', () => {
       booking(lucia, 6),                          // activa
       booking(sofia, 20),                         // fuera de ventana
       booking(lucia, 1 - 5),                      // anterior al envío: no cuenta
+      { ...booking(sofia, 3), booking_status: 'CANCELLED' as const },  // cancelada: no cuenta
+      { ...booking(sofia, 4), booking_status: 'WAITLISTED' as const }, // en espera: no cuenta
     ];
 
     expect(computeLinkMetrics(events, bookings, NOW)).toEqual({

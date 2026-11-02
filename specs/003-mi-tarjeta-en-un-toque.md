@@ -29,7 +29,7 @@ celular de la alumna **no vería nada**. La solución debe funcionar igual en el
 - Contenido mínimo: nombre de pila, saldo, total, últimos 5 movimientos, próximas 5 clases
   (7 días) con lugares libres, teléfono del estudio y fecha de la foto. **Nunca** el teléfono de la
   alumna ni datos de otras alumnas.
-- La tarjeta muestra "Actualizada el dd/mm a las hh:mm". La fuente de verdad sigue siendo la app de Andrea.
+- La tarjeta muestra "Actualizada el mié 04/11 a las hh:mm". La fuente de verdad sigue siendo la app de Andrea.
 
 ### Funciones de dominio (`src/domain/myCard.ts`, puras)
 ```ts
@@ -51,11 +51,11 @@ Sin dependencias ni servicios de analítica.
 | CA | Dado | Cuando | Entonces |
 |---|---|---|---|
 | **CA1** | Una alumna con paquete | Andrea genera su link | El link decodificado devuelve la misma tarjeta: nombre de pila, saldo, total, historial y clases. No contiene su teléfono ni datos de otra alumna. |
-| **CA2** | Un link roto, alterado, de otra versión o de más de 4000 caracteres | La alumna lo abre | `decodeCardHash` devuelve `null` sin lanzar error, y la pantalla dice "Este enlace no funciona. Pídele uno nuevo a Andrea." |
+| **CA2** | Un link roto, alterado, de otra versión, con fechas sin zona horaria o de más de 4000 caracteres | La alumna lo abre | `decodeCardHash` devuelve `null` sin lanzar error, y la pantalla dice "Este enlace no funciona. Pídele uno nuevo a Andrea." |
 | **CA3** | Clases en los próximos 7 días | Se arma la tarjeta | Aparecen solo las futuras, no canceladas, en orden horario, máximo 5. Los lugares libres = cupo − (CONFIRMED + ATTENDED), nunca negativo. |
 | **CA4** | Una alumna con saldo | Toca "Pedir lugar" | Se arma un link `wa.me` al teléfono del estudio con el texto codificado con `encodeURIComponent` que nombra la clase (día, hora, instructora). Si la clase está llena, el texto pide la lista de espera. |
 | **CA5** | Una alumna sin saldo | Ve su tarjeta | No hay link para pedir lugar (`null`) y se muestra `NO_BALANCE_MESSAGE`. |
-| **CA6** | Envíos de tarjeta registrados | Andrea abre Gestión | Ve tarjetas enviadas, % de alumnas que reservaron en los 7 días siguientes al envío (activación) y % que reservaron 2 o más veces en 14 días (retención). Sin envíos, los porcentajes son 0 y no hay división por cero. |
+| **CA6** | Envíos de tarjeta registrados | Andrea abre Gestión | Ve tarjetas enviadas, % de alumnas que reservaron en los 7 días siguientes al envío (activación) y % que reservaron 2 o más veces en 14 días (retención). Cuenta como reserva solo `CONFIRMED` o `ATTENDED` (no canceladas ni en espera). Sin envíos, los porcentajes son 0 y no hay división por cero. |
 
 ## 4. Métricas de éxito
 
@@ -78,6 +78,8 @@ Sin dependencias ni servicios de analítica.
 `src/domain/myCard.ts`, `src/infrastructure/linkEvents.ts`, `src/ui/MyCard.tsx`, `src/ui/Landing.tsx`,
 `src/ui/LinkMetrics.tsx`, `src/ui/StudentCard.tsx` (botón "Mandar tarjeta por WhatsApp"), `src/App.tsx` (rutas por hash),
 `tests/my-card.test.ts`, `README.md`.
+También entran en esta rama, por pedido de la Tarea 3: `docs/icp-user-persona.md`, `skills/pre-pr-check/SKILL.md`,
+`.github/workflows/ci.yml` y la regla 5.7 de `AGENTS.md`.
 
 ## 7. Registro de cambios
 - **1.0** (2026-11-02): versión inicial. Cambia el borrador del plan: la reserva directa desde el link se
@@ -85,3 +87,6 @@ Sin dependencias ni servicios de analítica.
   de Andrea. El CA de "descontar 1 sin doble cobro" queda cubierto por la spec 001 cuando Andrea confirma.
 - **1.1** (2026-11-02): el botón pasa de "Enviar tarjeta" a "Mandar tarjeta por WhatsApp", porque la skill de
   marca prohíbe "Enviar" como texto de botón. Sin cambios en los criterios.
+- **1.2** (2026-11-02): tras la revisión del segundo agente. CA6 cuenta solo reservas `CONFIRMED`/`ATTENDED`;
+  CA2 rechaza fechas sin zona horaria (AGENTS.md §4.5); se usa el paquete activo o el más reciente; Andrea
+  recibe aviso si el link no se puede armar; se listan los archivos extra de la Tarea 3 en §6.
