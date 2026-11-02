@@ -13,7 +13,7 @@ celular de la alumna **no vería nada**. La solución debe funcionar igual en el
 ## 2. Diseño de la solución
 
 ### Flujo (time to value < 30 s)
-1. En **Gestión → Tarjetas de las alumnas**, Andrea elige a la alumna y toca **"Enviar tarjeta"**.
+1. En **Gestión → Tarjetas de las alumnas**, Andrea elige a la alumna y toca **"Mandar tarjeta por WhatsApp"**.
 2. Se abre WhatsApp con un mensaje para la alumna y un link a la app.
 3. La alumna toca el link y ve **directo su tarjeta** (sin portada, sin cuenta, sin contraseña):
    saldo grande con los 10 sellos y las próximas clases con "Quedan 3 lugares" o "Clase llena".
@@ -42,7 +42,7 @@ computeLinkMetrics(sentEvents, bookings, now): LinkMetrics;
 ```
 
 ### Métricas (`src/infrastructure/linkEvents.ts`)
-Cada "Enviar tarjeta" guarda `{ studentId, sentAt }` en `localStorage` (`andrea_yoga_card_links_v1`).
+Cada "Mandar tarjeta" guarda `{ studentId, sentAt }` en `localStorage` (`andrea_yoga_card_links_v1`).
 Las métricas se calculan en el celular de Andrea cruzando esos envíos con las reservas de la app.
 Sin dependencias ni servicios de analítica.
 
@@ -76,10 +76,12 @@ Sin dependencias ni servicios de analítica.
 
 ## 6. Archivos autorizados
 `src/domain/myCard.ts`, `src/infrastructure/linkEvents.ts`, `src/ui/MyCard.tsx`, `src/ui/Landing.tsx`,
-`src/ui/LinkMetrics.tsx`, `src/ui/StudentCard.tsx` (botón "Enviar tarjeta"), `src/App.tsx` (rutas por hash),
+`src/ui/LinkMetrics.tsx`, `src/ui/StudentCard.tsx` (botón "Mandar tarjeta por WhatsApp"), `src/App.tsx` (rutas por hash),
 `tests/my-card.test.ts`, `README.md`.
 
 ## 7. Registro de cambios
 - **1.0** (2026-11-02): versión inicial. Cambia el borrador del plan: la reserva directa desde el link se
   reemplaza por "Pedir lugar" por WhatsApp, porque sin servidor la alumna no puede escribir en los datos
   de Andrea. El CA de "descontar 1 sin doble cobro" queda cubierto por la spec 001 cuando Andrea confirma.
+- **1.1** (2026-11-02): el botón pasa de "Enviar tarjeta" a "Mandar tarjeta por WhatsApp", porque la skill de
+  marca prohíbe "Enviar" como texto de botón. Sin cambios en los criterios.
