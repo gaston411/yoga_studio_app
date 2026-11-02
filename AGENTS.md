@@ -44,6 +44,7 @@ La app está pensada primero para Andrea y las instructoras: simple, rápida, qu
 4. Si algo no está en la spec, **pregunta**; no lo inventes.
 5. Si un criterio no se cumple, se corrige la spec primero, luego se reimplementa.
 6. Al terminar, reporta qué criterio cubre cada test.
+7. Antes de cada commit o PR, corre la skill `pre-pr-check`.
 
 ## 6. Seguridad (el repositorio es público)
 1. **Nunca** subas credenciales: API keys, tokens, contraseñas, `.env`. Solo existe `.env.example` con valores de ejemplo.
