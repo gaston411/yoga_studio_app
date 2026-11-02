@@ -1,0 +1,40 @@
+# Mismos comandos que la skill skills/pre-pr-check/SKILL.md.
+# Si cambias un comando aquí, cámbialo también en la skill.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pre-pr-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # historial completo para gitleaks
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Instalar dependencias
+        run: bun install --frozen-lockfile
+
+      - name: 1. Tipos
+        run: bun run lint
+
+      - name: 2. Tests
+        run: bun run test --reporter=dot
+
+      - name: 3. Dependencias
+        run: bun audit --audit-level=high
+
+      - name: 4. Secretos
+        env:
+          GITLEAKS_VERSION: 8.28.0
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
+          ./gitleaks git --redact --no-banner
