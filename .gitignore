@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Documentación local: nunca se sube al repo
+documentacion/
