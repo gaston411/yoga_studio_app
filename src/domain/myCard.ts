@@ -178,7 +178,7 @@ export function buildPlaceRequestLink(snapshot: CardSnapshot, classId: string): 
 
 /** Arma el wa.me con el que Andrea le manda la tarjeta a la alumna. */
 export function buildSendCardLink(studentPhone: string, studentName: string, cardUrl: string): string {
-  const message = `Hola ${firstName(studentName)}, aquí está tu tarjeta del estudio: ${cardUrl}`;
+  const message = `Hola ${firstName(studentName)} 🌿 Aquí está tu tarjeta del estudio. Ves tu saldo y pides lugar en un toque: ${cardUrl}`;
   return generateWhatsAppLink(studentPhone, message);
 }
 
@@ -272,3 +272,6 @@ function isCardSnapshot(x: unknown): x is CardSnapshot {
   );
   return historyOk && classesOk;
 }
+
+/** Teléfono del estudio en la demo (ficticio, AGENTS.md §6.3). */
+export const STUDIO_PHONE = '+5491100000000';

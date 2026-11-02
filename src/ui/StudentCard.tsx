@@ -5,9 +5,11 @@
  * Identidad visual: skills/brand-design/SKILL.md
  */
 import React, { useMemo, useState } from 'react';
-import { Leaf, Search } from 'lucide-react';
+import { Leaf, Search, MessageCircle } from 'lucide-react';
 import { Database, PackageAuditLog } from '../infrastructure/db.ts';
 import { PackageService, PackageError, PACKAGE_SIZE } from '../domain/packages.ts';
+import { STUDIO_PHONE, buildCardSnapshot, buildSendCardLink, encodeCardLink } from '../domain/myCard.ts';
+import { recordLinkSent } from '../infrastructure/linkEvents.ts';
 
 interface StudentCardProps {
   db: Database;
@@ -149,6 +151,8 @@ export function StudentCard({ db, packageService, canAdjust = false, onRefresh }
             )}
           </div>
 
+          {canAdjust && <SendCardButton key={studentId} db={db} studentId={studentId} onSent={onRefresh} />}
+
           <div className="space-y-2">
             <h3 className="text-lg font-semibold" style={SERIF}>Historial</h3>
             <ul className="divide-y divide-[#E4DDD2] rounded-2xl bg-white">
@@ -208,5 +212,44 @@ export function StudentCard({ db, packageService, canAdjust = false, onRefresh }
         </>
       )}
     </section>
+  );
+}
+
+/**
+ * Spec 003 — "Mandar tarjeta": abre WhatsApp con el link que lleva la tarjeta de la alumna.
+ * El link se arma al tocar, para que la foto del saldo sea la del momento del envío.
+ */
+function SendCardButton({ db, studentId, onSent }: { db: Database; studentId: string; onSent?: () => void }) {
+  const [sent, setSent] = useState(false);
+  const student = db.getStudentById(studentId);
+  if (!student) return null;
+
+  const handleSend = () => {
+    const snapshot = buildCardSnapshot(db, studentId, new Date(), STUDIO_PHONE);
+    if (!snapshot) return;
+    const base = `${window.location.origin}${window.location.pathname}`;
+    const link = buildSendCardLink(student.phone, student.name, encodeCardLink(snapshot, base));
+    recordLinkSent(studentId);
+    window.open(link, '_blank', 'noopener,noreferrer');
+    setSent(true);
+    onSent?.();
+  };
+
+  return (
+    <div className="space-y-2">
+      <button
+        type="button"
+        onClick={handleSend}
+        className="w-full min-h-11 rounded-full bg-[#4F5F45] hover:bg-[#2E2A26] text-white font-medium flex items-center justify-center gap-2"
+      >
+        <MessageCircle className="w-4 h-4" strokeWidth={1.5} aria-hidden />
+        Mandar tarjeta por WhatsApp
+      </button>
+      {sent && (
+        <p role="status" className="text-sm text-[#4F5F45]">
+          Tarjeta lista en WhatsApp. {student.name.split(' ')[0]} ve su saldo en un toque.
+        </p>
+      )}
+    </div>
   );
 }
