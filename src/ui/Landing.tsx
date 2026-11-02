@@ -37,7 +37,7 @@ export function Landing({ onTryDemo }: { onTryDemo: () => void }) {
         <section className="py-12 sm:py-20 max-w-2xl space-y-6">
           <p className="text-sm font-medium text-[#C46A4A]">Para estudios chicos de yoga y pilates</p>
           <h1 className="text-4xl sm:text-6xl font-semibold leading-tight" style={SERIF}>
-            Chau tarjetas de papel.
+            Adiós a las tarjetas de papel.
           </h1>
           <p className="text-lg max-w-xl">
             Tus alumnas saben cuántas clases les quedan. Tú dejas de contestarlo por WhatsApp.

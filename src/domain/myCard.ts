@@ -76,7 +76,10 @@ export function buildCardSnapshot(
   if (!student) return null;
 
   const packages = db.getPackagesByStudentId(studentId);
-  const pkg = packages.find((p) => p.status === 'ACTIVE') ?? packages[packages.length - 1];
+  // Paquete activo; si no hay, el más reciente (para mostrar "sin saldo" con datos reales).
+  const pkg =
+    packages.find((p) => p.status === 'ACTIVE') ??
+    packages.slice().sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0];
   if (!pkg) return null;
 
   const history = db
@@ -190,9 +193,11 @@ export function buildSendCardLink(studentPhone: string, studentName: string, car
  */
 export function computeLinkMetrics(events: LinkSentEvent[], bookings: Booking[], now: Date): LinkMetrics {
   const firstSent = new Map<string, number>();
+  let validSent = 0;
   for (const e of events) {
     const t = new Date(e.sentAt).getTime();
     if (Number.isNaN(t) || t > now.getTime()) continue;
+    validSent++;
     const prev = firstSent.get(e.studentId);
     if (prev === undefined || t < prev) firstSent.set(e.studentId, t);
   }
@@ -200,6 +205,7 @@ export function computeLinkMetrics(events: LinkSentEvent[], bookings: Booking[],
   const bookingsByStudent = new Map<string, number[]>();
   for (const b of bookings) {
     if (!firstSent.has(b.student_id)) continue;
+    if (b.booking_status !== 'CONFIRMED' && b.booking_status !== 'ATTENDED') continue;
     const list = bookingsByStudent.get(b.student_id) ?? [];
     list.push(new Date(b.created_at).getTime());
     bookingsByStudent.set(b.student_id, list);
@@ -217,7 +223,7 @@ export function computeLinkMetrics(events: LinkSentEvent[], bookings: Booking[],
   const students = firstSent.size;
   const percent = (n: number) => (students === 0 ? 0 : Math.floor((n * 100) / students));
   return {
-    sent: events.length,
+    sent: validSent,
     students,
     activationPercent: percent(activated),
     retentionPercent: percent(retained),
@@ -242,7 +248,7 @@ function pad(n: number): string {
   return String(n).padStart(2, '0');
 }
 
-function firstName(fullName: string): string {
+export function firstName(fullName: string): string {
   return fullName.trim().split(/\s+/)[0] ?? '';
 }
 
@@ -252,14 +258,17 @@ const isObject = (x: unknown): x is Record<string, unknown> => typeof x === 'obj
 const isInt = (x: unknown, min: number, max: number): x is number =>
   Number.isInteger(x) && (x as number) >= min && (x as number) <= max;
 const isText = (x: unknown, max: number): x is string => typeof x === 'string' && x.length > 0 && x.length <= max;
-const isIso = (x: unknown): x is string => isText(x, 40) && !Number.isNaN(Date.parse(x));
+// ISO 8601 con zona horaria obligatoria (AGENTS.md §4.5).
+const ISO_WITH_ZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
+const isIso = (x: unknown): x is string => isText(x, 40) && ISO_WITH_ZONE.test(x) && !Number.isNaN(Date.parse(x));
 
 function isCardSnapshot(x: unknown): x is CardSnapshot {
   if (!isObject(x)) return false;
   if (x.v !== CARD_VERSION) return false;
   if (!isText(x.name, 40) || !isIso(x.at)) return false;
   if (typeof x.studioPhone !== 'string' || !/^\+?\d{6,15}$/.test(x.studioPhone)) return false;
-  if (!isInt(x.total, 1, 100) || !isInt(x.remaining, 0, x.total as number)) return false;
+  // El saldo puede superar el total tras un ajuste de Andrea; solo se exige que no sea negativo.
+  if (!isInt(x.total, 1, 100) || !isInt(x.remaining, 0, 100)) return false;
   if (!Array.isArray(x.history) || x.history.length > MAX_HISTORY) return false;
   if (!Array.isArray(x.classes) || x.classes.length > MAX_CLASSES) return false;
   const historyOk = x.history.every(

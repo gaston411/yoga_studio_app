@@ -38,7 +38,7 @@ function BrokenLink() {
 }
 
 function CardView({ card }: { card: CardSnapshot }) {
-  const used = card.total - card.remaining;
+  const used = Math.max(0, card.total - card.remaining);
   const low = card.remaining > 0 && card.remaining <= 2;
   const updated = `${formatDay(card.at)} a las ${formatTime(card.at)}`;
 

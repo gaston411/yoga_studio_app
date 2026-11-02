@@ -8,7 +8,7 @@ import React, { useMemo, useState } from 'react';
 import { Leaf, Search, MessageCircle } from 'lucide-react';
 import { Database, PackageAuditLog } from '../infrastructure/db.ts';
 import { PackageService, PackageError, PACKAGE_SIZE } from '../domain/packages.ts';
-import { STUDIO_PHONE, buildCardSnapshot, buildSendCardLink, encodeCardLink } from '../domain/myCard.ts';
+import { STUDIO_PHONE, buildCardSnapshot, buildSendCardLink, decodeCardHash, encodeCardLink, firstName } from '../domain/myCard.ts';
 import { recordLinkSent } from '../infrastructure/linkEvents.ts';
 
 interface StudentCardProps {
@@ -220,18 +220,23 @@ export function StudentCard({ db, packageService, canAdjust = false, onRefresh }
  * El link se arma al tocar, para que la foto del saldo sea la del momento del envío.
  */
 function SendCardButton({ db, studentId, onSent }: { db: Database; studentId: string; onSent?: () => void }) {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const student = db.getStudentById(studentId);
   if (!student) return null;
+  const name = firstName(student.name);
 
   const handleSend = () => {
     const snapshot = buildCardSnapshot(db, studentId, new Date(), STUDIO_PHONE);
-    if (!snapshot) return;
     const base = `${window.location.origin}${window.location.pathname}`;
-    const link = buildSendCardLink(student.phone, student.name, encodeCardLink(snapshot, base));
+    const cardUrl = snapshot ? encodeCardLink(snapshot, base) : '';
+    // Se valida el link con el mismo lector que usa la alumna: si ella no podría abrirlo, no se manda.
+    if (!snapshot || !decodeCardHash(cardUrl.slice(cardUrl.indexOf('#')))) {
+      setStatus({ kind: 'error', text: `No pudimos armar la tarjeta de ${name}. Revisa que tenga un paquete.` });
+      return;
+    }
     recordLinkSent(studentId);
-    window.open(link, '_blank', 'noopener,noreferrer');
-    setSent(true);
+    window.open(buildSendCardLink(student.phone, student.name, cardUrl), '_blank', 'noopener,noreferrer');
+    setStatus({ kind: 'ok', text: `Abrimos WhatsApp con la tarjeta de ${name}.` });
     onSent?.();
   };
 
@@ -245,9 +250,9 @@ function SendCardButton({ db, studentId, onSent }: { db: Database; studentId: st
         <MessageCircle className="w-4 h-4" strokeWidth={1.5} aria-hidden />
         Mandar tarjeta por WhatsApp
       </button>
-      {sent && (
-        <p role="status" className="text-sm text-[#4F5F45]">
-          Tarjeta lista en WhatsApp. {student.name.split(' ')[0]} ve su saldo en un toque.
+      {status && (
+        <p role="status" className={`text-sm ${status.kind === 'error' ? 'text-[#B3261E]' : 'text-[#4F5F45]'}`}>
+          {status.text}
         </p>
       )}
     </div>
