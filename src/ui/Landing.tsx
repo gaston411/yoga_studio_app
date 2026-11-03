@@ -50,14 +50,6 @@ export function Landing({ onTryDemo }: { onTryDemo: () => void }) {
             >
               Probar la demo
             </button>
-            <a
-              href="https://github.com/gaston411/yoga_studio_app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="min-h-12 px-8 rounded-full border border-[#4F5F45] text-[#4F5F45] font-medium flex items-center justify-center hover:bg-white"
-            >
-              Ver cómo está hecha
-            </a>
           </div>
         </section>
 
