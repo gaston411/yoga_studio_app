@@ -1,5 +1,5 @@
 /**
- * Spec 003 — Portada para el ICP: la dueña de un estudio chico de yoga o pilates.
+ * Spec 003 — Portada de Sello (nombre del producto) para el ICP: la dueña de un estudio chico de yoga o pilates.
  * Voz "Calma Activa": directa, sin promesas infladas. Identidad: skills/brand-design/SKILL.md
  */
 import React from 'react';
@@ -30,7 +30,7 @@ export function Landing({ onTryDemo }: { onTryDemo: () => void }) {
     <div className="min-h-screen bg-[#F6F1E9] text-[#2E2A26] font-sans">
       <header className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-2">
         <Leaf className="w-5 h-5 text-[#4F5F45]" strokeWidth={1.5} aria-hidden />
-        <p className="text-lg font-semibold" style={SERIF}>Estudio Andrea</p>
+        <p className="text-lg font-semibold" style={SERIF}>Sello</p>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 pb-16">
@@ -73,7 +73,7 @@ export function Landing({ onTryDemo }: { onTryDemo: () => void }) {
       </main>
 
       <footer className="py-8 text-center text-sm text-[#4F5F45]">
-        Demo con datos ficticios · Estudio de Yoga Andrea
+        Sello · La demo usa el estudio ficticio de Andrea
       </footer>
     </div>
   );
