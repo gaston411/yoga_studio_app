@@ -1,0 +1,57 @@
+# Mismos 4 pasos que la skill skills/pre-pr-check: local y CI deben dar el mismo resultado.
+# No despliega nada: Vercel sigue desplegando por su cuenta desde GitHub.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks necesita el historial para revisar los commits
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Instalar dependencias
+        run: bun install --frozen-lockfile
+
+      # Los pasos siguientes corren aunque uno falle, para tener el reporte completo.
+      - name: 1. Tipos
+        if: ${{ !cancelled() }}
+        run: bun run lint
+
+      - name: 2. Tests
+        if: ${{ !cancelled() }}
+        run: bun run test --reporter=dot
+
+      - name: 3. Dependencias (altas y críticas)
+        if: ${{ !cancelled() }}
+        run: bun audit --audit-level=high
+
+      - name: 4. Secretos
+        if: ${{ !cancelled() }}
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Solo los commits del PR
+            ./gitleaks git --redact --no-banner --log-opts="${{ github.event.pull_request.base.sha }}..${{ github.sha }}"
+          else
+            ./gitleaks git --redact --no-banner
+          fi

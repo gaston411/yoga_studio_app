@@ -11,6 +11,10 @@ import { SessionService } from './domain/sessions.ts';
 import { AdminDashboard } from './ui/AdminDashboard.tsx';
 import { StudentCard } from './ui/StudentCard.tsx';
 import { Today, CalmErrorBoundary } from './ui/Today.tsx';
+import { MyCard } from './ui/MyCard.tsx';
+import { Landing } from './ui/Landing.tsx';
+import { LinkMetrics } from './ui/LinkMetrics.tsx';
+import { clearLinkEvents } from './infrastructure/linkEvents.ts';
 
 type Role = 'admin' | 'instructor' | 'student';
 type AdminTab = 'today' | 'manage';
@@ -23,7 +27,33 @@ const ROLES: { id: Role; label: string }[] = [
 
 const SERIF = { fontFamily: 'Fraunces, Georgia, "Times New Roman", serif' };
 
+type Screen = 'landing' | 'demo' | 'card';
+
+/** Spec 003 — Ruta por el fragmento de la URL: #t=… tarjeta de la alumna, #demo la app, vacío la portada. */
+function screenFromHash(hash: string): Screen {
+  if (hash.startsWith('#t=')) return 'card';
+  if (hash === '#demo') return 'demo';
+  return 'landing';
+}
+
 export default function App() {
+  const [hash, setHash] = useState(() => window.location.hash);
+
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const screen = screenFromHash(hash);
+  if (screen === 'card') return <MyCard hash={hash} />;
+  if (screen === 'landing') {
+    return <Landing onTryDemo={() => { window.location.hash = 'demo'; window.scrollTo(0, 0); }} />;
+  }
+  return <DemoApp />;
+}
+
+function DemoApp() {
   const [role, setRole] = useState<Role>('admin');
   const [adminTab, setAdminTab] = useState<AdminTab>('today');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -42,6 +72,7 @@ export default function App() {
   const handleResetData = () => {
     if (confirm('¿Empezar de cero con los datos de demostración? Se pierde lo que cambiaste.')) {
       globalDb.clearAll();
+      clearLinkEvents();
       seedInitialDemoData(globalDb);
       setResetKey((k) => k + 1);
     }
@@ -115,6 +146,7 @@ export default function App() {
                 sessionService={sessionService}
                 onRefresh={handleRefresh}
               />
+              <LinkMetrics key={`metrics-${refreshKey}`} db={globalDb} />
               <StudentCard db={globalDb} packageService={packageService} canAdjust onRefresh={handleRefresh} />
             </div>
           )}
